@@ -111,7 +111,7 @@ async function run() {
         })
 
 
-        // all products and category 
+        // all products and category api
         app.get('/categorylist', async (req, res) => {
             const query = {}
             const result = await CategoryList.find(query).toArray()
@@ -134,7 +134,7 @@ async function run() {
 
 
 
-        //reported item
+        //reported item api
         app.get('/reportedProducts', async (req, res) => {
             const query = { isReported: true }
             const result = await CategoryItems.find(query).toArray()
