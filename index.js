@@ -37,6 +37,7 @@ async function run() {
         //users collection added
         const usersCollection = client.db('BuySell').collection('usersCollection')
 
+        // booking collection added 
         const BookedCollection = client.db('BuySell').collection('BookedCollection')
         const paymentsCollection = client.db('BuySell').collection('paymentsCollection')
 
