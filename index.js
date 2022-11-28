@@ -30,13 +30,12 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
+        //for all category and its item
         const CategoryList = client.db('BuySell').collection('CategoryList')
         const CategoryItems = client.db('BuySell').collection('CategoryItems')
         const usersCollection = client.db('BuySell').collection('usersCollection')
         const BookedCollection = client.db('BuySell').collection('BookedCollection')
         const paymentsCollection = client.db('BuySell').collection('paymentsCollection')
-
-
 
         // STRIPE
         app.post('/create-payment-intent', async (req, res) => {
