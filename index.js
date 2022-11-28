@@ -1,12 +1,24 @@
 const express = require('express');
 const cors = require('cors');
-const port = process.env.PORT || 5000
+
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const port = process.env.PORT || 5000
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-app.use(cors())
+// const corsConfig = {
+//     origin: 'https://buysell-a13b9.web.app/',
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+// }
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
+
+
 app.use(express.json())
+app.use(cors())
+
 
 app.get('/', async (req, res) => {
     res.send('buysell portal server is running')
@@ -22,8 +34,81 @@ async function run() {
         const CategoryItems = client.db('BuySell').collection('CategoryItems')
         const usersCollection = client.db('BuySell').collection('usersCollection')
         const BookedCollection = client.db('BuySell').collection('BookedCollection')
+        const paymentsCollection = client.db('BuySell').collection('paymentsCollection')
 
 
+
+        // STRIPE
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body
+            const price = booking.price;
+            const amount = price * 100
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ],
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        })
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment)
+            const id = payment.bookingId
+            const filter = { _id: ObjectId(id) }
+
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const updateResult = await paymentsCollection.updateOne(filter, updatedDoc)
+            res.send(result)
+        })
+
+
+        app.get('/payments', async (req, res) => {
+            const query = {}
+            const booking = await paymentsCollection.find(query).toArray()
+            res.send(booking)
+        })
+
+
+        // booking list 
+        app.get('/bookedList', async (req, res) => {
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const result = await BookedCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.get('/bookedList/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const booking = await BookedCollection.findOne(query)
+            res.send(booking)
+        })
+
+
+        app.post('/bookedList', async (req, res) => {
+            const user = req.body;
+            const result = await BookedCollection.insertOne(user)
+            res.send(result)
+        })
+
+
+        // all products and category 
         app.get('/categorylist', async (req, res) => {
             const query = {}
             const result = await CategoryList.find(query).toArray()
@@ -44,6 +129,8 @@ async function run() {
             res.send(result)
         })
 
+
+
         //reported item
         app.get('/reportedProducts', async (req, res) => {
             const query = { isReported: true }
@@ -51,7 +138,9 @@ async function run() {
             res.send(result)
         })
 
-        //report product
+
+
+        //report product by id
         app.put("/reportedProducts/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
@@ -81,18 +170,8 @@ async function run() {
 
 
 
-        app.get('/bookedList', async (req, res) => {
-            let query = {}
-            if (req.query.email) {
-                query = {
-                    email: req.query.email
-                }
-            }
-            const result = await BookedCollection.find(query).toArray()
-            res.send(result)
-        })
 
-
+        // get user info
         app.get('/users', async (req, res) => {
             let query = {}
             if (req.query.email) {
@@ -104,7 +183,7 @@ async function run() {
             res.send(result)
         })
 
-
+        // seller my products api 
         app.get('/myproducts', async (req, res) => {
             let query = {}
             if (req.query.email) {
@@ -147,32 +226,23 @@ async function run() {
             res.send(result)
         })
 
+
         //Available handle api
-        app.put('/available/:id', async (req, res) => {
+        app.patch('/available/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
-            const options = { upsert: true }
             const updatedDoc = {
                 $set: {
-                    Available: true
+                    Available: false
                 }
             }
-            const result = await CategoryItems.updateOne(filter, updatedDoc, options)
+            const result = await CategoryItems.updateOne(filter, updatedDoc)
             res.send(result)
         })
 
 
 
-
-
-
-
-
-
-
-
-
-
+        // delete product api 
         app.delete('/products/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -183,6 +253,7 @@ async function run() {
 
 
 
+        // delete user api 
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id
             let query = { _id: ObjectId(id) }
@@ -191,22 +262,17 @@ async function run() {
         })
 
 
-
+        // add a product api 
         app.post('/categoryitems', async (req, res) => {
             const user = req.body;
             const result = await CategoryItems.insertOne(user)
             res.send(result)
         })
 
+        // add a user api 
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user)
-            res.send(result)
-        })
-
-        app.post('/bookedList', async (req, res) => {
-            const user = req.body;
-            const result = await BookedCollection.insertOne(user)
             res.send(result)
         })
 
