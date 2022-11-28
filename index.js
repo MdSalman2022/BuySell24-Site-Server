@@ -33,7 +33,10 @@ async function run() {
         //for all category and its item
         const CategoryList = client.db('BuySell').collection('CategoryList')
         const CategoryItems = client.db('BuySell').collection('CategoryItems')
+
+        //users collection added
         const usersCollection = client.db('BuySell').collection('usersCollection')
+
         const BookedCollection = client.db('BuySell').collection('BookedCollection')
         const paymentsCollection = client.db('BuySell').collection('paymentsCollection')
 
