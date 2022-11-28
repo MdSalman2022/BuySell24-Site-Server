@@ -187,7 +187,7 @@ async function run() {
             res.send(result)
         })
 
-        // seller my products api 
+        // seller my products api
         app.get('/myproducts', async (req, res) => {
             let query = {}
             if (req.query.email) {
@@ -199,7 +199,7 @@ async function run() {
             res.send(result)
         })
 
-        //verify user
+        //verify user api
         app.put('/seller/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
