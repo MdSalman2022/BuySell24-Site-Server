@@ -84,7 +84,7 @@ async function run() {
         })
 
 
-        // booking list 
+        // booking list collection filter by email
         app.get('/bookedList', async (req, res) => {
             let query = {}
             if (req.query.email) {
