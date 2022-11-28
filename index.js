@@ -41,7 +41,7 @@ async function run() {
         const BookedCollection = client.db('BuySell').collection('BookedCollection')
         const paymentsCollection = client.db('BuySell').collection('paymentsCollection')
 
-        // STRIPE
+        // STRIPE Payment api
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body
             const price = booking.price;
