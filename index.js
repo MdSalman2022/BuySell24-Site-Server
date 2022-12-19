@@ -104,6 +104,48 @@ async function run() {
         })
 
 
+
+
+
+
+
+
+
+
+        // app.get('/search', async (req, res) => {
+        //     const query = {}
+        //     const result = await CategoryItems.find(query).toArray()
+        //     res.send(result)
+        // })
+
+        app.get('/search', async (req, res) => {
+            const name = req.query.name;
+            console.log(name);
+            let query = {}
+            if (req.query.name) {
+                query = {
+                    name: { $regex: name, $options: 'i' }
+                }
+            }
+            const result = await CategoryItems.find(query).toArray()
+            res.send(result)
+        })
+
+        app.get('/products', async (req, res) => {
+            const query = {}
+            const result = await CategoryItems.find(query).toArray()
+            res.send(result)
+        })
+
+
+
+
+
+
+
+
+
+
         app.post('/bookedList', async (req, res) => {
             const user = req.body;
             const result = await BookedCollection.insertOne(user)
@@ -126,11 +168,6 @@ async function run() {
         })
 
         //
-        app.get('/products', async (req, res) => {
-            const query = {}
-            const result = await CategoryItems.find(query).toArray()
-            res.send(result)
-        })
 
 
 
